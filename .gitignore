@@ -1,0 +1,24 @@
+#dependências
+
+node_modules
+
+#código compilado
+
+dist
+
+#variáveis e credenciais
+
+.env
+.env.*
+
+#logs
+
+.log
+npm-debug.log
+
+#editor e sistema
+
+.vscode
+.idea
+.DS_Store
+Thumbs.db
