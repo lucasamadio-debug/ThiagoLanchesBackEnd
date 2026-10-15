@@ -1,1 +1,5 @@
-//comentario pra commit
+import express from "express"
+
+const app = express()
+
+export default app;
