@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/AuthService";
+import { AppError } from "../errors/AppError";
 
 export class AuthController {
     private authService = new AuthService();
@@ -22,6 +23,15 @@ export class AuthController {
                 return;
             }
 
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if(!regex.test(email)) {
+                res.status(400).json({
+                    message: "Formato de e-mail inválido"
+                })
+                return;
+            }
+
             const result = await this.authService.login(
                 email,
                 cpf,
@@ -31,10 +41,9 @@ export class AuthController {
             res.status(200).json(result);
 
         } catch (error) {
-            if (error instanceof Error &&
-                error.message === "Credenciais inválidas") {
-                res.status(401).json({
-                    message: "Credenciais inválidas"
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message
                 });
                 return;
             }

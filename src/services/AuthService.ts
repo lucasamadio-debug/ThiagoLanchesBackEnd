@@ -1,6 +1,8 @@
 import { UserRepository } from "../repositories/UserRepository";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { UnauthorizedError } from "../errors/UnauthorizedError";
+import { ForbiddenError } from "../errors/ForbiddenError";
 
 export class AuthService {
     private userRepository = new UserRepository();
@@ -9,7 +11,7 @@ export class AuthService {
         const user = await this.userRepository.findByEmailAndCpf(email, cpf);
 
         if (!user) {
-            throw new Error("Credenciais inválidas");
+            throw new UnauthorizedError("Credenciais inválidas");
         }
 
         const senhaValida = await bcrypt.compare(
@@ -18,11 +20,11 @@ export class AuthService {
         );
 
         if (!senhaValida) {
-            throw new Error("Credenciais inválidas");
+            throw new UnauthorizedError("Credenciais inválidas");
         }
 
         if (user.role !== "ADMIN") {
-            throw new Error("Acesso administrativo negado");
+            throw new ForbiddenError("Acesso administrativo negado");
         }
 
         const secret = process.env.JWT_SECRET;
