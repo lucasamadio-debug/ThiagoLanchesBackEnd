@@ -1,5 +1,6 @@
 import { AppError } from "../errors/AppError";
 import { UserRepository } from "../repositories/UserRepository";
+import { validarCPF } from "../utils/validarCPF";
 import bcrypt from "bcrypt";
 
 export class UserService {
@@ -13,12 +14,6 @@ export class UserService {
         const numeroRegex = /[0-9]/;
         const especialRegex = /[^A-Za-z0-9]/;
         const cpfLimpo = cpf.replace(/\D/g, "");
-        const cpfRepetidoRegex = /^(\d)\1{10}$/;
-        const digitos = cpfLimpo.split("").map(Number);
-        let soma = 0;
-        let soma2 = 0;
-        let primeiroDigito = 0;
-        let segundoDigito = 0;
         
         if (!nome.trim()) {
             throw new AppError("O nome não pode estar vazio", 400)
@@ -52,39 +47,7 @@ export class UserService {
             throw new AppError("O CPF deve conter 11 dígitos", 400)
         }
 
-        if (cpfRepetidoRegex.test(cpfLimpo)) {
-            throw new AppError("CPF Inválido", 400)
-        }
-
-        for (let i = 0; i < 9; i++){
-            soma += digitos[i] * (10 - i)    
-        }
-
-        const resto = soma % 11;
-
-        if (resto < 2) {
-            primeiroDigito = 0;
-        } else {
-            primeiroDigito = 11 - resto
-        }
-
-        if (primeiroDigito !== digitos[9]) {
-            throw new AppError("CPF inválido", 400);
-        }
-
-        for (let i = 0; i < 10; i++){
-            soma2 += digitos[i] * (11 - i)    
-        }
-
-        const resto2 = soma2 % 11;
-
-        if (resto2 < 2) {
-            segundoDigito = 0;
-        } else {
-            segundoDigito = 11 - resto2
-        }
-
-        if (segundoDigito !== digitos[10]) {
+        if (!validarCPF(cpfLimpo)) {
             throw new AppError("CPF inválido", 400);
         }
 
