@@ -11,10 +11,7 @@ export class UserService {
         const resultado = userCadastroSchema.safeParse({nome, email, cpf, senha});
 
         if (!resultado.success) {
-            throw new AppError(
-                resultado.error.issues[0]?.message ?? "Dados inválidos",
-                400
-            );
+            throw new AppError(resultado.error.issues[0]?.message ?? "Dados inválidos", 400);
         }
 
         const dados = resultado.data;
