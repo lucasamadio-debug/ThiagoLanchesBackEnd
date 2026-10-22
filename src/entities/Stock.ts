@@ -1,7 +1,8 @@
 import { stockIdSchema, stockProdutoIdSchema, stockQuantidadeSchema } from "../schemas/stockSchemas";
+import { Serializavel } from "../interfaces/Serializavel";
 import{ z } from "zod";
 
-export class Stock {
+export class Stock implements Serializavel {
     private _id_estoque: number | null;
     private _id_produto: number;
     private _quantidade: number = 0;

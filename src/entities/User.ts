@@ -1,7 +1,7 @@
-
 import { userIdSchema, userNomeSchema, userEmailSchema, userCpfSchema, userRoleSchema } from "../schemas/userSchemas";
+import { Serializavel } from "../interfaces/Serializavel";
 
-export class User {
+export class User implements Serializavel {
     private _id_usuario: number;
     private _nome: string = "";
     private _email: string = "";

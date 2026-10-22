@@ -1,13 +1,13 @@
-
 import { categoryIdSchema, categoryNomeSchema } from "../schemas/categorySchemas";
+import { Serializavel } from "../interfaces/Serializavel";
+import { EntidadeNomeada } from "./EntidadeNomeada";
 
-export class Category {
+export class Category extends EntidadeNomeada implements Serializavel {
     private _id_categoria: number | null;
-    private _nome_categoria: string = "";
 
     constructor(id_categoria: number | null, nome_categoria: string) {
+        super(nome_categoria)
         this._id_categoria = id_categoria === null ? null : categoryIdSchema.parse(id_categoria);
-        this.nome_categoria = nome_categoria;
     }
 
     get id_categoria(): number | null {
@@ -15,11 +15,11 @@ export class Category {
     }
 
     get nome_categoria(): string {
-        return this._nome_categoria;
+        return this.nome;
     }
 
     set nome_categoria(nome: string) {
-        this._nome_categoria = categoryNomeSchema.parse(nome);
+        this.nome = nome;
     }
 
     toJSON() {
