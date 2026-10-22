@@ -13,11 +13,7 @@ interface AuthPayload extends JwtPayload {
     role: "ADMIN" | "USER";
 }
 
-export async function authMiddleware(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> {
+export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
         const authorization = req.headers.authorization;
 
@@ -36,21 +32,14 @@ export async function authMiddleware(
 
         const decoded = jwt.verify(token, secret);
 
-        if (
-            typeof decoded === "string" ||
-            typeof decoded.id !== "number" ||
-            !Number.isSafeInteger(decoded.id)
-        ) {
+        if (typeof decoded === "string" || typeof decoded.id !== "number" || !Number.isSafeInteger(decoded.id)) {
             res.status(401).json({ message: "Token inválido" });
             return;
         }
 
         const payload = decoded as AuthPayload;
 
-        const [rows] = await pool.execute<AdminRow[]>(
-            "SELECT id_usuario, role FROM usuarios WHERE id_usuario = ?",
-            [payload.id]
-        );
+        const [rows] = await pool.execute<AdminRow[]>("SELECT id_usuario, role FROM usuarios WHERE id_usuario = ?",[payload.id]);
 
         if (rows.length === 0) {
             res.status(401).json({ message: "Usuário não encontrado" });

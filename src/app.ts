@@ -2,6 +2,7 @@ import express from "express";
 import authRoutes from "./routes/authRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import productRoutes from "./routes/productRoutes";
+import ingredientRoutes from "./routes/ingredientRoutes";
 import cors from "cors";
 
 
@@ -13,4 +14,5 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/menu", productRoutes);
+app.use("/", ingredientRoutes);
 export default app;
