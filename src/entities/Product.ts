@@ -1,6 +1,7 @@
 import { productIdSchema, productNomeSchema, productPrecoSchema, productCategoriaSchema, productIngredientesSchema, productPopularSchema } from "../schemas/productSchemas";
+import { Serializavel } from "../interfaces/Serializavel";
 
-export class Product {
+export class Product implements Serializavel {
     private _id: number;
     private _nome: string = "";
     private _preco: number = 0;
