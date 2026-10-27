@@ -2,6 +2,7 @@ import { ProductRepository } from "../repositories/ProductRepository";
 import { Product } from "../entities/Product";
 import { AppError } from "../errors/AppError";
 import { productIdSchema, productCreateSchema } from "../schemas/productSchemas";
+import type { IngredienteProduto } from "../repositories/ProductRepository";
 
 export class ProductService {
     private productRepository = new ProductRepository();
@@ -26,24 +27,50 @@ export class ProductService {
         return produto;
     }
 
-    async create(nome: string, preco: number, popular: boolean, id_categoria: number, ingredienteIds: number[]): Promise<number> {
-        const resultado = productCreateSchema.safeParse({nome, preco, popular, id_categoria, ingredienteIds});
+    
+    async create(nome: string, preco: number, popular: boolean, id_categoria: number, ingredientes: IngredienteProduto[]): Promise<number> {
+        const resultado = productCreateSchema.safeParse({
+            nome,
+            preco,
+            popular,
+            id_categoria,
+            ingredientes
+        });
 
         if (!resultado.success) {
             throw new AppError(resultado.error.issues[0]?.message ?? "Dados inválidos", 400);
         }
 
         const dados = resultado.data;
+        const ids = dados.ingredientes.map(i => i.id_ingrediente);
 
-        await this.validarReferencias(dados.id_categoria, dados.ingredienteIds);
+        await this.validarReferencias(dados.id_categoria, ids);
 
-        const idCriado = await this.executarGravacao(() => this.productRepository.create(dados.nome, dados.preco, dados.popular, dados.id_categoria, dados.ingredienteIds));
-
-        return idCriado;
+        return this.executarGravacao(() =>
+            this.productRepository.create(
+                dados.nome,
+                dados.preco,
+                dados.popular,
+                dados.id_categoria,
+                dados.ingredientes
+            )
+        );
     }
 
-    async update(id: number, nome: string, preco: number, popular: boolean, id_categoria: number, ingredienteIds: number[]): Promise<boolean> {
-        const resultado = productCreateSchema.safeParse({nome, preco, popular, id_categoria, ingredienteIds});
+    async update(id: number, nome: string, preco: number, popular: boolean, id_categoria: number, ingredientes: IngredienteProduto[]): Promise<boolean> {
+        const resultadoId = productIdSchema.safeParse(id);
+
+        if (!resultadoId.success) {
+            throw new AppError("ID inválido", 400);
+        }
+
+        const resultado = productCreateSchema.safeParse({
+            nome,
+            preco,
+            popular,
+            id_categoria,
+            ingredientes
+        });
 
         if (!resultado.success) {
             throw new AppError(resultado.error.issues[0]?.message ?? "Dados inválidos", 400);
@@ -51,24 +78,28 @@ export class ProductService {
 
         const dados = resultado.data;
 
-        const resultadoid = productIdSchema.safeParse(id);
-
-        if (!resultadoid.success) {
-            throw new AppError("ID inválido", 400); 
-        }
-
-        await this.validarReferencias(dados.id_categoria, dados.ingredienteIds);
-
-        const produto = await this.productRepository.findById(resultadoid.data);
+        const produto = await this.productRepository.findById(resultadoId.data);
 
         if (produto === null) {
             throw new AppError("Produto não encontrado", 404);
         }
 
-        const atualizado = await this.executarGravacao(() => this.productRepository.update(resultadoid.data, dados.nome, dados.preco, dados.popular, dados.id_categoria, dados.ingredienteIds));
+        const ids = dados.ingredientes.map(i => i.id_ingrediente);
 
-        return atualizado;
+        await this.validarReferencias(dados.id_categoria, ids);
+
+        return this.executarGravacao(() =>
+            this.productRepository.update(
+                resultadoId.data,
+                dados.nome,
+                dados.preco,
+                dados.popular,
+                dados.id_categoria,
+                dados.ingredientes
+            )
+        );
     }
+
 
     async delete(id: number): Promise<boolean> {
         const resultadoid = productIdSchema.safeParse(id);
@@ -126,5 +157,15 @@ export class ProductService {
         }
     }
 
+    async findByIdDetails(id: number) {
+        const produto = await this.findById(id);
+
+        const receita = await this.productRepository.findRecipeByProductId(produto.id);
+
+        return {
+            ...produto.toJSON(),
+            ...receita
+        };
+    }
 
 }
