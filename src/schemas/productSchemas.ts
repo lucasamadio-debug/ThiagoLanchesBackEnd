@@ -11,5 +11,11 @@ export const productCreateSchema = z.object({
     preco: productPrecoSchema,
     popular: productPopularSchema,
     id_categoria: productIdSchema,
-    ingredienteIds: z.array(productIdSchema)
+    ingredientes: z.array(z.object({id_ingrediente: productIdSchema, quantidade: z.number().int().positive()})).superRefine((ingredientes, ctx) => {
+    const ids = ingredientes.map(i => i.id_ingrediente);
+
+    if (new Set(ids).size !== ids.length) {
+        ctx.addIssue({code: "custom", message: "Não é permitido repetir ingredientes"});
+    }
+    })
 });

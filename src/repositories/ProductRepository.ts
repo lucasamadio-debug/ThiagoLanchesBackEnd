@@ -22,6 +22,17 @@ interface CountRow extends RowDataPacket {
     total: number;
 }
 
+export interface IngredienteProduto {
+    id_ingrediente: number;
+    quantidade: number;
+}
+
+interface ReceitaRow extends RowDataPacket {
+    id_categoria: number;
+    id_ingrediente: number | null;
+    quantidade: number | null;
+}
+
 export class ProductRepository {
     async findAll():Promise<Product[]> {
         const sql = "select p.id_produto as id, p.nome_lanches as nome, p.preco, p.popular, p.ingredientes, c.nome_categoria as categoria from produto as p inner join categoria as c on p.id_categoria = c.id_categoria"
@@ -58,13 +69,13 @@ export class ProductRepository {
     }
 
     
-    async create(nome: string, preco: number, popular: boolean, id_categoria: number, ingredienteIds: number[]): Promise<number> {
+    async create(nome: string, preco: number, popular: boolean, id_categoria: number, ingredientes: IngredienteProduto[]): Promise<number> {
         const connection = await pool.getConnection();
 
         try {
             await connection.beginTransaction();
 
-            const idsUnicos = [...new Set(ingredienteIds)];
+            const idsUnicos = ingredientes.map(i => i.id_ingrediente);
 
             const nomes = await this.findIngredientNamesByIds(idsUnicos, connection);
 
@@ -80,8 +91,8 @@ export class ProductRepository {
 
             const idProduto = result.insertId;
 
-            for (const idIngrediente of idsUnicos) {
-                await connection.execute(`insert into produto_ingredientes (id_produto, id_ingredientes) values (?, ?)`, [idProduto, idIngrediente]);
+            for (const ingrediente of ingredientes) {
+                await connection.execute(`insert into produto_ingredientes (id_produto, id_ingredientes, quantidade) values (?, ?, ?)`, [idProduto, ingrediente.id_ingrediente, ingrediente.quantidade]);
             }
 
             await connection.commit();
@@ -98,7 +109,7 @@ export class ProductRepository {
     }
 
 
-    async update(id: number, nome: string, preco: number, popular: boolean, id_categoria: number, ingredienteIds: number[]): Promise<boolean> {
+    async update(id: number, nome: string, preco: number, popular: boolean, id_categoria: number, ingredientes: IngredienteProduto[]): Promise<boolean> {
         const connection = await pool.getConnection();
 
         try {
@@ -111,7 +122,7 @@ export class ProductRepository {
                 return false;
             }
 
-            const idsUnicos = [...new Set(ingredienteIds)];
+            const idsUnicos = ingredientes.map(i => i.id_ingrediente);
 
             const nomes = await this.findIngredientNamesByIds(idsUnicos, connection);
 
@@ -127,8 +138,8 @@ export class ProductRepository {
 
             await connection.execute("delete from produto_ingredientes where id_produto = ?", [id]);
 
-            for (const idIngrediente of idsUnicos) {
-                await connection.execute(`insert into produto_ingredientes (id_produto, id_ingredientes) values (?, ?)`, [id, idIngrediente]);
+            for (const ingrediente of ingredientes) {
+                await connection.execute(`INSERT INTO produto_ingredientes (id_produto, id_ingredientes, quantidade) VALUES (?, ?, ?)`, [id, ingrediente.id_ingrediente, ingrediente.quantidade]);
             }
 
             await connection.commit();
@@ -224,6 +235,17 @@ export class ProductRepository {
         const [rows] = await pool.query<CountRow[]>(sql, idsUnicos);
 
         return rows[0].total === idsUnicos.length;
+    }
+
+    
+    async findRecipeByProductId(id: number): Promise<{id_categoria: number; ingredientesDetalhados: IngredienteProduto[]; }> {
+        const sql = `select p.id_categoria, pi.id_ingredientes AS id_ingrediente, pi.quantidade from produto p left join produto_ingredientes pi on pi.id_produto = p.id_produto where p.id_produto = ? order by pi.id_ingredientes`;
+        const [rows] = await pool.query<ReceitaRow[]>(sql, [id]);
+
+        return {
+            id_categoria: rows[0].id_categoria,
+            ingredientesDetalhados: rows.filter((row) => row.id_ingrediente !== null && row.quantidade !== null).map((row) => ({id_ingrediente: row.id_ingrediente!, quantidade: row.quantidade!}))
+        };
     }
 
 }   

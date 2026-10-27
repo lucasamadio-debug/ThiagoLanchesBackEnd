@@ -21,7 +21,7 @@ export class ProductController {
     findById = async(req: Request, res: Response): Promise<void> => {
         try {
             const id = Number(req.params.id);
-            const produto = await this.productService.findById(id);
+            const produto = await this.productService.findByIdDetails(id);
             res.status(200).json(produto);
         } catch (error) {
             if (error instanceof AppError) {
@@ -34,8 +34,8 @@ export class ProductController {
 
     create = async(req: Request, res: Response): Promise<void> => {
         try {
-            const { nome, preco, popular, id_categoria, ingredienteIds } = req.body;
-            const criado = await this.productService.create(nome, preco, popular, id_categoria, ingredienteIds)
+            const { nome, preco, popular, id_categoria, ingredientes } = req.body;
+            const criado = await this.productService.create(nome, preco, popular, id_categoria, ingredientes);
             res.status(201).json({ id_produto: criado})
         } catch (error) {
             if (error instanceof AppError) {
@@ -49,8 +49,8 @@ export class ProductController {
     update = async(req: Request, res: Response): Promise<void> => {
         try {
             const id = Number(req.params.id);
-            const { nome, preco, popular, id_categoria, ingredienteIds } = req.body;
-            const atualizado = await this.productService.update(id, nome, preco, popular, id_categoria, ingredienteIds)
+            const { nome, preco, popular, id_categoria, ingredientes } = req.body;
+            const atualizado = await this.productService.update(id, nome, preco, popular, id_categoria, ingredientes);
             if (!atualizado) {
                 throw new AppError("Não foi possível atualizar o Produto", 404);
             }
