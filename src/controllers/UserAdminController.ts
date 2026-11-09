@@ -52,10 +52,26 @@ export class UserAdminController {
         } catch (error) { this.responderErro(res, error); }
     };
 
+    
     update = async (req: Request, res: Response): Promise<void> => {
         try {
-            res.status(200).json(await this.service.update(Number(req.params.id), req.body));
-        } catch (error) { this.responderErro(res, error); }
+            const idAutenticado = this.idAutenticado(req);
+            const idSolicitado = Number(req.params.id);
+
+            if (!Number.isSafeInteger(idSolicitado) || idSolicitado <= 0) {
+                throw new AppError("ID de usuário inválido", 400);
+            }
+
+            if (idSolicitado !== idAutenticado) {
+                throw new AppError("Você só pode editar o próprio usuário", 403);
+            }
+
+            const atualizado = await this.service.update(idAutenticado, req.body);
+
+            res.status(200).json(atualizado);
+        } catch (error) {
+            this.responderErro(res, error);
+        }
     };
 
     delete = async (req: Request, res: Response): Promise<void> => {
