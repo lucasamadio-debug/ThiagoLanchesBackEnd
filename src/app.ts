@@ -6,6 +6,7 @@ import ingredientRoutes from "./routes/ingredientRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import stockRoutes from "./routes/stockRoutes";
 import userRoutes from "./routes/userRoutes";
+import adminCrudRoutes from "./routes/adminCrudRoutes";
 import cors from "cors";
 
 
@@ -21,4 +22,5 @@ app.use("/", ingredientRoutes);
 app.use("/", categoryRoutes);
 app.use("/", stockRoutes);
 app.use("/", userRoutes);
+app.use("/admin", adminCrudRoutes);
 export default app;
