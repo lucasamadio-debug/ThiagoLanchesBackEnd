@@ -2,7 +2,7 @@ import pool from "../config/database";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export interface UsuarioPublico {
-    id: number; // Mantém compatibilidade com a listagem do Frontend
+    id: number;
     id_usuario: number;
     nome: string;
     email: string;
@@ -25,32 +25,26 @@ export class UserAdminRepository {
 
     async findAll(): Promise<UsuarioPublico[]> {
         const [rows] = await pool.query<UsuarioRow[]>(
-            "SELECT id_usuario, nome, email, cpf, role FROM usuarios ORDER BY id_usuario"
+            "select id_usuario, nome, email, cpf, role from usuarios order by id_usuario"
         );
         return rows.map(row => this.mapear(row));
     }
 
     async findById(id: number): Promise<UsuarioPublico | null> {
-        const [rows] = await pool.execute<UsuarioRow[]>(
-            "SELECT id_usuario, nome, email, cpf, role FROM usuarios WHERE id_usuario = ?",
-            [id]
-        );
+        const [rows] = await pool.execute<UsuarioRow[]>("select id_usuario, nome, email, cpf, role from usuarios where id_usuario = ?", [id]);
         return rows.length ? this.mapear(rows[0]) : null;
     }
 
     async findByCpf(cpf: string): Promise<UsuarioPublico | null> {
-        const [rows] = await pool.execute<UsuarioRow[]>(
-            "SELECT id_usuario, nome, email, cpf, role FROM usuarios WHERE cpf = ?",
-            [cpf]
-        );
+        const [rows] = await pool.execute<UsuarioRow[]>("select id_usuario, nome, email, cpf, role from usuarios where cpf = ?", [cpf]);
         return rows.length ? this.mapear(rows[0]) : null;
     }
 
     async update(id: number, nome: string, cpf: string, senhaHash?: string): Promise<boolean> {
-        let sql = "UPDATE usuarios SET nome = ?, cpf = ? WHERE id_usuario = ?";
+        let sql = "update usuarios set nome = ?, cpf = ? where id_usuario = ?";
         let params: Array<string | number> = [nome, cpf, id];
         if (senhaHash !== undefined) {
-            sql = "UPDATE usuarios SET nome = ?, cpf = ?, senha = ? WHERE id_usuario = ?";
+            sql = "update usuarios set nome = ?, cpf = ?, senha = ? where id_usuario = ?";
             params = [nome, cpf, senhaHash, id];
         }
         const [result] = await pool.execute<ResultSetHeader>(sql, params);
@@ -58,9 +52,7 @@ export class UserAdminRepository {
     }
 
     async delete(id: number): Promise<boolean> {
-        const [result] = await pool.execute<ResultSetHeader>(
-            "DELETE FROM usuarios WHERE id_usuario = ?", [id]
-        );
+        const [result] = await pool.execute<ResultSetHeader>("delete from usuarios where id_usuario = ?", [id]);
         return result.affectedRows > 0;
     }
 }

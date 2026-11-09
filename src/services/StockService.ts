@@ -2,11 +2,7 @@ import { StockRepository } from "../repositories/StockRepository";
 import type { StockDetalhado } from "../repositories/StockRepository";
 import { ProductRepository } from "../repositories/ProductRepository";
 import { AppError } from "../errors/AppError";
-import {
-    stockIdSchema,
-    stockProdutoIdSchema,
-    stockQuantidadeSchema
-} from "../schemas/stockSchemas";
+import {stockIdSchema, stockProdutoIdSchema, stockQuantidadeSchema } from "../schemas/stockSchemas";
 
 export class StockService {
     private repository = new StockRepository();

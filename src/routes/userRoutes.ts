@@ -12,5 +12,4 @@ router.get("/usuarios/:id", authMiddleware, controller.findById);
 router.put("/usuarios/:id", authMiddleware, controller.update);
 router.delete("/usuarios/:id", authMiddleware, controller.delete);
 
-// POST /auth/register permanece com o AuthController já existente.
 export default router;

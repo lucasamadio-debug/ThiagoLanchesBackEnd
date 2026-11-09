@@ -22,7 +22,7 @@ interface CountRow extends RowDataPacket {
     total: number;
 }
 
-export interface IngredienteProduto {
+export type IngredienteProduto = {
     id_ingrediente: number;
     quantidade: number;
 }
